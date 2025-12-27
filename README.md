@@ -2,6 +2,18 @@
 
 A real-time analytics platform that compares and visualizes chat activity across multiple Twitch channels, providing live leaderboards, emote trends, and engagement metrics.
 
+## Getting Started
+
+👉 **New to the project?** Start with the [Quick Start Guide](QUICKSTART.md) to get the infrastructure running.
+
+For detailed setup instructions, see:
+
+- [Quick Start Guide](QUICKSTART.md) - Get up and running quickly
+- [Milestone 1 Infrastructure Guide](docs/Phase%201/Milestone1_Infrastructure_Guide.md) - Detailed setup instructions
+- [Infrastructure README](infrastructure/README.md) - Infrastructure documentation
+
+---
+
 ## Core Features
 
 ### User Input

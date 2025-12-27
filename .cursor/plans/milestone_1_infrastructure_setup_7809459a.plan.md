@@ -40,19 +40,11 @@ todos:
 
 ## Overview
 
-Set up the complete infrastructure stack for Phase 1 MVP. This includes Docker Compose configuration, Kafka cluster with topics, and Cassandra database with schema. This milestone has no dependencies and must be completed before any service development.
-
-**Goal:** All infrastructure services running, topics created, Cassandra schema ready
-
-**Estimated Time:** 1-2 days
-
-**Dependencies:** None
-
----
+Set up the complete infrastructure stack for Phase 1 MVP. This includes Docker Compose configuration, Kafka cluster with topics, and Cassandra database with schema. This milestone has no dependencies and must be completed before any service development.**Goal:** All infrastructure services running, topics created, Cassandra schema ready**Estimated Time:** 1-2 days**Dependencies:** None---
 
 ## Project Structure
 
-```
+```javascript
 ChatBattle/
 ├── docker-compose.yml          # Main orchestration file
 ├── .env                        # Environment variables
@@ -76,9 +68,7 @@ ChatBattle/
 
 ### 1.1 Create docker-compose.yml
 
-**Location:** `docker-compose.yml` (project root)
-
-**Services to configure:**
+**Location:** `docker-compose.yml` (project root)**Services to configure:**
 
 - Zookeeper (required for Kafka)
 - Kafka (message broker)
@@ -97,28 +87,28 @@ ChatBattle/
 
 - [ ] Create docker-compose.yml file
 - [ ] Configure Zookeeper service
-  - Image: `confluentinc/cp-zookeeper:latest`
-  - Port: 2181
-  - Environment: ZOOKEEPER_CLIENT_PORT, ZOOKEEPER_TICK_TIME
-  - Volume: zookeeper-data
+- Image: `confluentinc/cp-zookeeper:latest`
+- Port: 2181
+- Environment: ZOOKEEPER_CLIENT_PORT, ZOOKEEPER_TICK_TIME
+- Volume: zookeeper-data
 - [ ] Configure Kafka service
-  - Image: `confluentinc/cp-kafka:latest`
-  - Ports: 9092 (internal), 9093 (external)
-  - Depends on: zookeeper
-  - Environment: KAFKA_BROKER_ID, KAFKA_ZOOKEEPER_CONNECT, KAFKA_ADVERTISED_LISTENERS
-  - Volume: kafka-data
+- Image: `confluentinc/cp-kafka:latest`
+- Ports: 9092 (internal), 9093 (external)
+- Depends on: zookeeper
+- Environment: KAFKA_BROKER_ID, KAFKA_ZOOKEEPER_CONNECT, KAFKA_ADVERTISED_LISTENERS
+- Volume: kafka-data
 - [ ] Configure Cassandra service
-  - Image: `cassandra:4.1`
-  - Ports: 9042 (CQL), 7000 (inter-node), 7001 (TLS)
-  - Environment: CASSANDRA_CLUSTER_NAME, CASSANDRA_DC, CASSANDRA_RACK
-  - Volume: cassandra-data
+- Image: `cassandra:4.1`
+- Ports: 9042 (CQL), 7000 (inter-node), 7001 (TLS)
+- Environment: CASSANDRA_CLUSTER_NAME, CASSANDRA_DC, CASSANDRA_RACK
+- Volume: cassandra-data
 - [ ] Set up Docker network
-  - Network name: `chatbattle-network`
-  - Driver: bridge
+- Network name: `chatbattle-network`
+- Driver: bridge
 - [ ] Configure volumes for data persistence
-  - zookeeper-data
-  - kafka-data
-  - cassandra-data
+- zookeeper-data
+- kafka-data
+- cassandra-data
 - [ ] Add health checks for each service
 - [ ] Test: `docker-compose up -d` starts all services
 - [ ] Test: `docker-compose down` stops all services cleanly
@@ -129,9 +119,7 @@ ChatBattle/
 
 ### 2.1 Create .env file
 
-**Location:** `.env` (project root, gitignored)
-
-**Variables needed:**
+**Location:** `.env` (project root, gitignored)**Variables needed:**
 
 ```bash
 # Kafka Configuration
@@ -146,13 +134,11 @@ CASSANDRA_KEYSPACE=twitch_chat
 DOCKER_NETWORK=chatbattle-network
 ```
 
+
+
 ### 2.2 Create .env.example
 
-**Location:** `.env.example` (committed to git)
-
-**Purpose:** Template for other developers
-
-**Tasks:**
+**Location:** `.env.example` (committed to git)**Purpose:** Template for other developers**Tasks:**
 
 - [ ] Create .env file with local values
 - [ ] Create .env.example with placeholder values
@@ -165,25 +151,21 @@ DOCKER_NETWORK=chatbattle-network
 
 ### 3.1 Create Topic Initialization Script
 
-**Location:** `infrastructure/kafka/init-topics.sh`
-
-**Purpose:** Automatically create required Kafka topics on startup
-
-**Topics to create:**
+**Location:** `infrastructure/kafka/init-topics.sh`**Purpose:** Automatically create required Kafka topics on startup**Topics to create:**
 
 1. **twitch-chat-messages**
 
-   - Partitions: 3
-   - Replication factor: 1
-   - Retention: 7 days (604800000 ms)
-   - Config: cleanup.policy=delete
+- Partitions: 3
+- Replication factor: 1
+- Retention: 7 days (604800000 ms)
+- Config: cleanup.policy=delete
 
 2. **channel-stats**
 
-   - Partitions: 3
-   - Replication factor: 1
-   - Retention: 1 day (86400000 ms)
-   - Config: cleanup.policy=compact, min.cleanable.dirty.ratio=0.1
+- Partitions: 3
+- Replication factor: 1
+- Retention: 1 day (86400000 ms)
+- Config: cleanup.policy=compact, min.cleanable.dirty.ratio=0.1
 
 **Implementation Tasks:**
 
@@ -206,39 +188,38 @@ DOCKER_NETWORK=chatbattle-network
 
 ### 4.1 Create Schema Initialization Script
 
-**Location:** `infrastructure/cassandra/init-schema.cql`
-
-**Purpose:** Create keyspace and table schema
-
-**Schema to create:**
+**Location:** `infrastructure/cassandra/init-schema.cql`**Purpose:** Create keyspace and table schema**Schema to create:**
 
 1. **Keyspace: twitch_chat**
    ```cql
-   CREATE KEYSPACE IF NOT EXISTS twitch_chat
-   WITH REPLICATION = {
-     'class': 'SimpleStrategy',
-     'replication_factor': 1
-   };
+      CREATE KEYSPACE IF NOT EXISTS twitch_chat
+      WITH REPLICATION = {
+        'class': 'SimpleStrategy',
+        'replication_factor': 1
+      };
    ```
+
+
+
 
 2. **Table: raw_chat_messages**
    ```cql
-   CREATE TABLE IF NOT EXISTS twitch_chat.raw_chat_messages (
-       channel_id TEXT,
-       timestamp BIGINT,
-       message_id UUID,
-       user_id TEXT,
-       username TEXT,
-       message TEXT,
-       emotes LIST<TEXT>,
-       PRIMARY KEY ((channel_id), timestamp, message_id)
-   ) WITH CLUSTERING ORDER BY (timestamp DESC)
-     AND default_time_to_live = 604800
-     AND compaction = {
-       'class': 'TimeWindowCompactionStrategy',
-       'compaction_window_unit': 'DAYS',
-       'compaction_window_size': 1
-     };
+      CREATE TABLE IF NOT EXISTS twitch_chat.raw_chat_messages (
+          channel_id TEXT,
+          timestamp BIGINT,
+          message_id UUID,
+          user_id TEXT,
+          username TEXT,
+          message TEXT,
+          emotes LIST<TEXT>,
+          PRIMARY KEY ((channel_id), timestamp, message_id)
+      ) WITH CLUSTERING ORDER BY (timestamp DESC)
+        AND default_time_to_live = 604800
+        AND compaction = {
+          'class': 'TimeWindowCompactionStrategy',
+          'compaction_window_unit': 'DAYS',
+          'compaction_window_size': 1
+        };
    ```
 
 
@@ -267,15 +248,15 @@ DOCKER_NETWORK=chatbattle-network
 **Tasks:**
 
 - [ ] Verify Zookeeper is running
-  - Command: `docker exec zookeeper nc -zv localhost 2181`
-  - Or: `echo ruok | nc localhost 2181` (should return "imok")
+- Command: `docker exec zookeeper nc -zv localhost 2181`
+- Or: `echo ruok | nc localhost 2181` (should return "imok")
 - [ ] Verify Kafka is running
-  - Command: `docker exec kafka kafka-broker-api-versions --bootstrap-server localhost:9092`
-  - Check logs: `docker logs kafka`
+- Command: `docker exec kafka kafka-broker-api-versions --bootstrap-server localhost:9092`
+- Check logs: `docker logs kafka`
 - [ ] Verify Cassandra is running
-  - Command: `docker exec cassandra nodetool status`
-  - Check logs: `docker logs cassandra`
-  - Connect: `docker exec -it cassandra cqlsh`
+- Command: `docker exec cassandra nodetool status`
+- Check logs: `docker logs cassandra`
+- Connect: `docker exec -it cassandra cqlsh`
 
 ### 5.2 Kafka Topic Verification
 
@@ -285,18 +266,24 @@ DOCKER_NETWORK=chatbattle-network
 - [ ] Describe topic: `docker exec kafka kafka-topics --describe --topic twitch-chat-messages --bootstrap-server localhost:9092`
 - [ ] Test message production:
   ```bash
-  docker exec -it kafka kafka-console-producer \
-    --topic twitch-chat-messages \
-    --bootstrap-server localhost:9092
+    docker exec -it kafka kafka-console-producer \
+      --topic twitch-chat-messages \
+      --bootstrap-server localhost:9092
   ```
+
+
+
 
 - [ ] Test message consumption:
   ```bash
-  docker exec -it kafka kafka-console-consumer \
-    --topic twitch-chat-messages \
-    --from-beginning \
-    --bootstrap-server localhost:9092
+    docker exec -it kafka kafka-console-consumer \
+      --topic twitch-chat-messages \
+      --from-beginning \
+      --bootstrap-server localhost:9092
   ```
+
+
+
 
 - [ ] Verify partitioning strategy
 
@@ -309,15 +296,21 @@ DOCKER_NETWORK=chatbattle-network
 - [ ] Verify table exists: `DESCRIBE TABLE twitch_chat.raw_chat_messages;`
 - [ ] Test write operation:
   ```cql
-  INSERT INTO twitch_chat.raw_chat_messages 
-  (channel_id, timestamp, message_id, user_id, username, message, emotes)
-  VALUES ('test_channel', 1234567890, uuid(), 'user123', 'testuser', 'Hello!', ['Kappa']);
+    INSERT INTO twitch_chat.raw_chat_messages 
+    (channel_id, timestamp, message_id, user_id, username, message, emotes)
+    VALUES ('test_channel', 1234567890, uuid(), 'user123', 'testuser', 'Hello!', ['Kappa']);
   ```
+
+
+
 
 - [ ] Test read operation:
   ```cql
-  SELECT * FROM twitch_chat.raw_chat_messages WHERE channel_id = 'test_channel';
+    SELECT * FROM twitch_chat.raw_chat_messages WHERE channel_id = 'test_channel';
   ```
+
+
+
 
 - [ ] Verify TTL: `SELECT channel_id, timestamp, message, TTL(message) FROM twitch_chat.raw_chat_messages;`
 - [ ] Test query patterns (time range queries)
@@ -347,9 +340,7 @@ DOCKER_NETWORK=chatbattle-network
 
 ### 6.1 Infrastructure Documentation
 
-**Location:** `infrastructure/README.md`
-
-**Content:**
+**Location:** `infrastructure/README.md`**Content:**
 
 - Overview of infrastructure components
 - Service descriptions
@@ -371,9 +362,7 @@ DOCKER_NETWORK=chatbattle-network
 
 ### 6.2 Milestone 1 Guide
 
-**Location:** `docs/Phase 1/Milestone1_Infrastructure_Guide.md`
-
-**Content:**
+**Location:** `docs/Phase 1/Milestone1_Infrastructure_Guide.md`**Content:**
 
 - Step-by-step setup instructions
 - Configuration details
@@ -407,10 +396,10 @@ DOCKER_NETWORK=chatbattle-network
 **Tasks:**
 
 - [ ] Create helper scripts:
-  - `scripts/start-infrastructure.sh` - Start all services
-  - `scripts/stop-infrastructure.sh` - Stop all services
-  - `scripts/reset-infrastructure.sh` - Reset (remove volumes)
-  - `scripts/check-health.sh` - Health check all services
+- `scripts/start-infrastructure.sh` - Start all services
+- `scripts/stop-infrastructure.sh` - Stop all services
+- `scripts/reset-infrastructure.sh` - Reset (remove volumes)
+- `scripts/check-health.sh` - Health check all services
 - [ ] Make scripts executable
 - [ ] Document script usage
 
@@ -430,26 +419,26 @@ DOCKER_NETWORK=chatbattle-network
 ### Kafka Topics
 
 - [ ] `twitch-chat-messages` topic exists
-  - [ ] 3 partitions
-  - [ ] Replication factor 1
-  - [ ] Retention policy set
+- [ ] 3 partitions
+- [ ] Replication factor 1
+- [ ] Retention policy set
 - [ ] `channel-stats` topic exists
-  - [ ] 3 partitions
-  - [ ] Replication factor 1
-  - [ ] Log compaction enabled
+- [ ] 3 partitions
+- [ ] Replication factor 1
+- [ ] Log compaction enabled
 - [ ] Can produce messages to topics
 - [ ] Can consume messages from topics
 
 ### Cassandra Schema
 
 - [ ] `twitch_chat` keyspace exists
-  - [ ] Replication strategy: SimpleStrategy
-  - [ ] Replication factor: 1
+- [ ] Replication strategy: SimpleStrategy
+- [ ] Replication factor: 1
 - [ ] `raw_chat_messages` table exists
-  - [ ] Correct schema (partition key, clustering keys)
-  - [ ] TTL set to 7 days
-  - [ ] Compaction strategy configured
-  - [ ] Clustering order: timestamp DESC
+- [ ] Correct schema (partition key, clustering keys)
+- [ ] TTL set to 7 days
+- [ ] Compaction strategy configured
+- [ ] Clustering order: timestamp DESC
 - [ ] Can write data to table
 - [ ] Can read data from table
 - [ ] TTL expiration works
@@ -496,15 +485,15 @@ After completing Milestone 1:
 
 1. **Milestone 2:** Data Ingestion Pipeline
 
-   - Can now connect services to Kafka
-   - Can test message production
-   - Can verify messages in topics
+- Can now connect services to Kafka
+- Can test message production
+- Can verify messages in topics
 
 2. **Milestone 3:** Stream Processing
 
-   - Can consume from `twitch-chat-messages` topic
-   - Can write to Cassandra
-   - Can produce to `channel-stats` topic
+- Can consume from `twitch-chat-messages` topic
+- Can write to Cassandra
+- Can produce to `channel-stats` topic
 
 ---
 
@@ -525,18 +514,4 @@ After completing Milestone 1:
 
 ## Success Criteria
 
-✅ All infrastructure services start successfully
-
-✅ Kafka topics are created and accessible
-
-✅ Cassandra schema is created and accessible
-
-✅ Can produce/consume messages from Kafka
-
-✅ Can read/write data to Cassandra
-
-✅ Data persists after service restarts
-
-✅ Documentation is complete
-
-✅ All verification tests pass
+✅ All infrastructure services start successfully✅ Kafka topics are created and accessible✅ Cassandra schema is created and accessible✅ Can produce/consume messages from Kafka✅ Can read/write data to Cassandra✅ Data persists after service restarts✅ Documentation is complete
