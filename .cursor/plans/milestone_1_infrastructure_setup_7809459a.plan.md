@@ -134,8 +134,6 @@ CASSANDRA_KEYSPACE=twitch_chat
 DOCKER_NETWORK=chatbattle-network
 ```
 
-
-
 ### 2.2 Create .env.example
 
 **Location:** `.env.example` (committed to git)**Purpose:** Template for other developers**Tasks:**
@@ -191,6 +189,7 @@ DOCKER_NETWORK=chatbattle-network
 **Location:** `infrastructure/cassandra/init-schema.cql`**Purpose:** Create keyspace and table schema**Schema to create:**
 
 1. **Keyspace: twitch_chat**
+
    ```cql
       CREATE KEYSPACE IF NOT EXISTS twitch_chat
       WITH REPLICATION = {
@@ -198,9 +197,6 @@ DOCKER_NETWORK=chatbattle-network
         'replication_factor': 1
       };
    ```
-
-
-
 
 2. **Table: raw_chat_messages**
    ```cql
@@ -221,7 +217,6 @@ DOCKER_NETWORK=chatbattle-network
           'compaction_window_size': 1
         };
    ```
-
 
 **Implementation Tasks:**
 
@@ -265,25 +260,21 @@ DOCKER_NETWORK=chatbattle-network
 - [ ] List all topics: `docker exec kafka kafka-topics --list --bootstrap-server localhost:9092`
 - [ ] Describe topic: `docker exec kafka kafka-topics --describe --topic twitch-chat-messages --bootstrap-server localhost:9092`
 - [ ] Test message production:
+
   ```bash
     docker exec -it kafka kafka-console-producer \
       --topic twitch-chat-messages \
       --bootstrap-server localhost:9092
   ```
 
-
-
-
 - [ ] Test message consumption:
+
   ```bash
     docker exec -it kafka kafka-console-consumer \
       --topic twitch-chat-messages \
       --from-beginning \
       --bootstrap-server localhost:9092
   ```
-
-
-
 
 - [ ] Verify partitioning strategy
 
@@ -295,22 +286,18 @@ DOCKER_NETWORK=chatbattle-network
 - [ ] Verify keyspace exists: `DESCRIBE KEYSPACE twitch_chat;`
 - [ ] Verify table exists: `DESCRIBE TABLE twitch_chat.raw_chat_messages;`
 - [ ] Test write operation:
+
   ```cql
-    INSERT INTO twitch_chat.raw_chat_messages 
+    INSERT INTO twitch_chat.raw_chat_messages
     (channel_id, timestamp, message_id, user_id, username, message, emotes)
     VALUES ('test_channel', 1234567890, uuid(), 'user123', 'testuser', 'Hello!', ['Kappa']);
   ```
 
-
-
-
 - [ ] Test read operation:
+
   ```cql
     SELECT * FROM twitch_chat.raw_chat_messages WHERE channel_id = 'test_channel';
   ```
-
-
-
 
 - [ ] Verify TTL: `SELECT channel_id, timestamp, message, TTL(message) FROM twitch_chat.raw_chat_messages;`
 - [ ] Test query patterns (time range queries)
